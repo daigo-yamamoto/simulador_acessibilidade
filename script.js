@@ -5,7 +5,7 @@ let moveBackward = false;
 let rotateLeft = false;
 let rotateRight = false;
 let velocity = new THREE.Vector3();
-let rotationSpeed = 0.02; // velocidade da rotação
+let rotationSpeed = 1; // velocidade da rotação
 let prevTime = performance.now();
 
 function init() {
@@ -72,17 +72,43 @@ function init() {
     animate();
 }
 
-// Função para atualizar a posição da câmera
+// Variáveis para armazenar se a câmera está em contato com a rampa ou degraus
+let onRamp = false;
+let onStairs = false;
+
+function checkCollision() {
+    // Suponha que a rampa e os degraus têm posições fixas no mundo
+    // Você precisará substituir estas coordenadas com as posições reais da rampa e degraus no seu jogo
+    const rampPosition = { x: -5, zStart: -5, zEnd: 5 };
+    const stairsPosition = { x: 5, zStart: -5, zEnd: 5 };
+
+    // Verifica se a câmera está na posição da rampa
+    if (camera.position.x > rampPosition.x - 2.5 && camera.position.x < rampPosition.x + 2.5 &&
+        camera.position.z > rampPosition.zStart && camera.position.z < rampPosition.zEnd) {
+        onRamp = true;
+    } else {
+        onRamp = false;
+    }
+
+    // Verifica se a câmera está na posição dos degraus
+    if (camera.position.x > stairsPosition.x - 2.5 && camera.position.x < stairsPosition.x + 2.5 &&
+        camera.position.z > stairsPosition.zStart && camera.position.z < stairsPosition.zEnd) {
+        onStairs = true;
+    } else {
+        onStairs = false;
+    }
+}
+
 function moveCamera(deltaTime) {
     velocity.z -= velocity.z * 10.0 * deltaTime;
 
-    if (moveForward) velocity.z -= 50.0 * deltaTime;
+    if (moveForward && !onStairs) velocity.z -= 50.0 * deltaTime;
     if (moveBackward) velocity.z += 50.0 * deltaTime;
 
     camera.translateZ(velocity.z * deltaTime);
 
-    if (rotateLeft) camera.rotation.y += rotationSpeed;
-    if (rotateRight) camera.rotation.y -= rotationSpeed;
+    if (rotateLeft) camera.rotation.y += rotationSpeed * deltaTime;
+    if (rotateRight) camera.rotation.y -= rotationSpeed * deltaTime;
 }
 
 // Função de animação
@@ -92,6 +118,7 @@ function animate() {
     const time = performance.now();
     const deltaTime = (time - prevTime) / 1000;
 
+    checkCollision();
     moveCamera(deltaTime);
 
     renderer.render(scene, camera);
