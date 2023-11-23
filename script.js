@@ -21,20 +21,20 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('scene-container').appendChild(renderer.domElement);
 
-    // Adicionar plano para grama
-    const grassTexture = new THREE.TextureLoader().load('texturas/grama.jpg'); 
-    const grassMaterial = new THREE.MeshBasicMaterial({ map: grassTexture });
-    const grassGeometry = new THREE.PlaneGeometry(500, 500); // Aumente o tamanho conforme necessário
-    grass = new THREE.Mesh(grassGeometry, grassMaterial);
-    grass.rotation.x = -Math.PI / 2; // Rotação para deixar o plano horizontal
-    grass.position.y = -0.5; // Ajuste a posição y conforme necessário
+    // Terreno com grama
+    const grassTexture = new THREE.TextureLoader().load('texturas/grama.jpg');
+    const grassMaterial = new THREE.MeshLambertMaterial({ map: grassTexture });
+    const grassGeometry = new THREE.PlaneGeometry(500, 500);
+    const grass = new THREE.Mesh(grassGeometry, grassMaterial);
+    grass.rotation.x = -Math.PI / 2;
+    grass.position.y = -0.5;
     scene.add(grass);
 
-    // Adicionar esfera para o céu
-    const skyTexture = new THREE.TextureLoader().load('texturas/ceu.jpg'); 
+    // Céu
+    const skyTexture = new THREE.TextureLoader().load('texturas/ceu.jpg');
     const skyMaterial = new THREE.MeshBasicMaterial({ map: skyTexture, side: THREE.BackSide });
     const skyGeometry = new THREE.SphereGeometry(500, 32, 32);
-    sky = new THREE.Mesh(skyGeometry, skyMaterial);
+    const sky = new THREE.Mesh(skyGeometry, skyMaterial);
     scene.add(sky);
     
     // Adicione luz para melhorar a visualização das texturas
@@ -60,6 +60,10 @@ function init() {
     stairs.position.set(5, 0, 0);
     scene.add(stairs);
 
+    createTexturedBuilding(-30, 0, -50, 12, 20, 30, 'texturas/parede1.jpeg');
+    createTexturedBuilding(0, 0, -100, 15, 30, 40, 'texturas/parede2.jpeg');
+    createTexturedBuilding(30, 0, -50, 10, 20, 25, 'texturas/parede3.jpeg');
+
     // Posicao da camera de um cadeirante
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
     camera.position.set(0, 1.6, 0); // Altura da câmera simula a altura de uma pessoa sentada
@@ -70,6 +74,21 @@ function init() {
 
     // Animação (loop de renderização)
     animate();
+}
+
+const textureLoader = new THREE.TextureLoader();
+
+// Função para criar um prédio com textura
+function createTexturedBuilding(x, y, z, width, depth, height, texturePath) {
+    const buildingGeometry = new THREE.BoxGeometry(width, height, depth);
+
+    // Carrega a textura
+    const buildingTexture = textureLoader.load(texturePath);
+    const buildingMaterial = new THREE.MeshLambertMaterial({ map: buildingTexture });
+
+    const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
+    building.position.set(x, y + (height / 2), z);
+    scene.add(building);
 }
 
 // Variáveis para armazenar se a câmera está em contato com a rampa ou degraus
