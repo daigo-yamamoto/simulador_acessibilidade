@@ -76,8 +76,8 @@ function init() {
 function moveCamera(deltaTime) {
     velocity.z -= velocity.z * 10.0 * deltaTime;
 
-    if (moveForward) velocity.z -= 400.0 * deltaTime;
-    if (moveBackward) velocity.z += 400.0 * deltaTime;
+    if (moveForward) velocity.z -= 50.0 * deltaTime;
+    if (moveBackward) velocity.z += 50.0 * deltaTime;
 
     camera.translateZ(velocity.z * deltaTime);
 
