@@ -50,8 +50,10 @@ function init() {
     directionalLight.position.set(0, 10, 0);
     scene.add(directionalLight);
 
+    const rampWidth = 2; // Largura da rampa
+
     // Criar a rua com calçadas
-    createStreetAndSidewalks(streetWidth, streetLength, sidewalkWidth, sidewalkHeight);
+    createStreetAndSidewalks(streetWidth, streetLength, sidewalkWidth, sidewalkHeight, rampWidth);
 
     // Criar prédios com textura
     const buildingWidth = 10; // Largura do prédio
@@ -85,7 +87,7 @@ function init() {
 const textureLoader = new THREE.TextureLoader();
 
 // Função para criar a rua e calçadas
-function createStreetAndSidewalks(streetWidth, streetLength, sidewalkWidth, sidewalkHeight) {
+function createStreetAndSidewalks(streetWidth, streetLength, sidewalkWidth, sidewalkHeight, rampWidth) {
     // Rua
     const streetGeometry = new THREE.PlaneGeometry(streetWidth, streetLength);
     const streetMaterial = new THREE.MeshLambertMaterial({ color: 0x333333 });
@@ -103,33 +105,25 @@ function createStreetAndSidewalks(streetWidth, streetLength, sidewalkWidth, side
     sidewalkLeft.position.set(-(streetWidth / 2 + sidewalkWidth / 2), sidewalkHeight / 2, 0);
     sidewalkRight.position.set(streetWidth / 2 + sidewalkWidth / 2, sidewalkHeight / 2, 0);
 
+    // Criar espaços para rampas
+    createRamp(-(streetWidth / 2 + sidewalkWidth / 2), sidewalkHeight, rampWidth, 0);
+    createRamp(streetWidth / 2 + sidewalkWidth / 2, sidewalkHeight, rampWidth, 0);
+
     scene.add(sidewalkLeft);
     scene.add(sidewalkRight);
 
-    // Rampas de acesso
-    // Material para as rampas
-    const rampMaterial = new THREE.MeshLambertMaterial({ color: 0xFF0000 }); // Vermelho para visibilidade
+}
 
-    // Definindo a geometria da rampa (mais larga para visibilidade)
-    const rampGeometry = new THREE.PlaneGeometry(sidewalkWidth, sidewalkHeight);
-    
-    // Definindo posições das rampas
-    const rampPositions = [-100, 0, 100]; // Posições ao longo da calçada onde as rampas serão colocadas
+// Função para criar rampas
+function createRamp(xPosition, sidewalkHeight, rampWidth, streetLength) {
+    const rampHeight = sidewalkHeight;
+    const rampLength = rampWidth; // Comprimento da rampa
+    const rampGeometry = new THREE.BoxGeometry(rampWidth, rampHeight, rampLength);
+    const rampMaterial = new THREE.MeshLambertMaterial({ color: 0xA0522D }); // Cor da rampa
+    const ramp = new THREE.Mesh(rampGeometry, rampMaterial);
 
-    for (let i = 0; i < rampPositions.length; i++) {
-        const ramp = new THREE.Mesh(rampGeometry, rampMaterial);
-        ramp.rotation.x = -Math.PI / 4; // Inclinação da rampa
-        ramp.position.set(-(streetWidth / 2 + sidewalkWidth / 2), sidewalkHeight / 2, rampPositions[i]);
-
-        const ramp2 = new THREE.Mesh(rampGeometry, rampMaterial);
-        ramp2.rotation.x = -Math.PI / 4; // Inclinação da rampa
-        ramp2.position.set(streetWidth / 2 + sidewalkWidth / 2, sidewalkHeight / 2, rampPositions[i]);
-
-        scene.add(ramp);
-        scene.add(ramp2);
-
-        console.log("Rampa adicionada em: ", ramp.position);
-    }
+    ramp.position.set(xPosition, rampHeight / 2, streetLength / 4); // Ajustar posição da rampa
+    scene.add(ramp);
 }
 
 // Função para criar prédios com textura
@@ -147,36 +141,6 @@ function createTexturedBuilding(x, z, width, depth, height, texturePath) {
     scene.add(building);
 }
 
-// Variáveis para armazenar se a câmera está em contato com a calçada ou rampa
-let onSidewalk = false;
-let onRamp = false;
-
-// Posições das rampas
-const rampPositions = [-100, 0, 100];
-const rampWidth = sidewalkWidth; // Supondo que a largura da rampa seja igual à largura da calçada
-
-function checkCollision() {
-    onSidewalk = false;
-    onRamp = false;
-
-    // Verifica se a câmera está na posição da calçada
-    if ((camera.position.x < -(streetWidth / 2) && camera.position.x > -(streetWidth / 2 + sidewalkWidth)) || 
-        (camera.position.x > (streetWidth / 2) && camera.position.x < (streetWidth / 2 + sidewalkWidth))) {
-        onSidewalk = true;
-    }
-
-    // Verifica se a câmera está na posição da rampa
-    for (let i = 0; i < rampPositions.length; i++) {
-        if (camera.position.z > rampPositions[i] - rampWidth / 2 && 
-            camera.position.z < rampPositions[i] + rampWidth / 2 &&
-            camera.position.x >= -(streetWidth / 2) && 
-            camera.position.x <= (streetWidth / 2)) {
-            onRamp = true;
-            break; // Sai do loop se a câmera estiver em qualquer uma das rampas
-        }
-    }
-}
-
 function moveCamera(deltaTime) {
     // Calcula a nova posição baseada no movimento
     let newZ = velocity.z - velocity.z * 10.0 * deltaTime;
@@ -189,15 +153,6 @@ function moveCamera(deltaTime) {
     // Aplica rotação
     if (rotateLeft) camera.rotation.y += rotationSpeed * deltaTime;
     if (rotateRight) camera.rotation.y -= rotationSpeed * deltaTime;
-
-    // Verifica a colisão com a calçada e rampa
-    checkCollision();
-
-    // Restringe o movimento vertical se estiver na calçada e não na rampa
-    if (onSidewalk && !onRamp) {
-        // Impede que a câmera suba na calçada
-        camera.position.y = Math.max(camera.position.y, sidewalkHeight);
-    }
 }
 
 // As funções onKeyDown e onKeyUp permanecem as mesmas
@@ -210,7 +165,6 @@ function animate() {
     const time = performance.now();
     const deltaTime = (time - prevTime) / 1000;
 
-    checkCollision();
     moveCamera(deltaTime);
 
     renderer.render(scene, camera);
