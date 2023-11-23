@@ -8,6 +8,12 @@ let velocity = new THREE.Vector3();
 let rotationSpeed = 1; // velocidade da rotação
 let prevTime = performance.now();
 
+// Dimensões da rua e calçadas
+const streetWidth = 20;
+const streetLength = 500;
+const sidewalkWidth = 3;
+const sidewalkHeight = 0.2;
+
 function init() {
     // Criar cena
     scene = new THREE.Scene();
@@ -44,25 +50,24 @@ function init() {
     directionalLight.position.set(0, 10, 0);
     scene.add(directionalLight);
 
+    // Criar a rua com calçadas
+    createStreetAndSidewalks(streetWidth, streetLength, sidewalkWidth, sidewalkHeight);
 
-    // Adicionar rampa
-    const rampGeometry = new THREE.BoxGeometry(5, 1, 10);
-    const rampMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00});
-    ramp = new THREE.Mesh(rampGeometry, rampMaterial);
-    ramp.rotation.x = -0.5; // Inclinação da rampa
-    ramp.position.set(-5, 0, 0);
-    scene.add(ramp);
+    // Criar prédios com textura
+    const buildingWidth = 10; // Largura do prédio
+    const buildingDepth = 15; // Profundidade do prédio
+    const buildingHeight = 40; // Altura do prédio
+    createTexturedBuilding(-streetWidth / 2 - buildingWidth / 2 - sidewalkWidth, 0, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio.jpeg');
+    createTexturedBuilding(-streetWidth / 2 - buildingWidth / 2 - sidewalkWidth, 20, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio2.jpeg');
+    createTexturedBuilding(-streetWidth / 2 - buildingWidth / 2 - sidewalkWidth, -20, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio3.jpeg');
+    createTexturedBuilding(-streetWidth / 2 - buildingWidth / 2 - sidewalkWidth, 40, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio.jpeg');
+    createTexturedBuilding(-streetWidth / 2 - buildingWidth / 2 - sidewalkWidth, -40, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio2.jpeg');
 
-    // Adicionar escadas
-    const stairsGeometry = new THREE.BoxGeometry(5, 1, 10);
-    const stairsMaterial = new THREE.MeshBasicMaterial({color: 0xff0000});
-    stairs = new THREE.Mesh(stairsGeometry, stairsMaterial);
-    stairs.position.set(5, 0, 0);
-    scene.add(stairs);
-
-    createTexturedBuilding(-30, 0, -50, 12, 20, 30, 'texturas/parede1.jpeg');
-    createTexturedBuilding(0, 0, -100, 15, 30, 40, 'texturas/parede2.jpeg');
-    createTexturedBuilding(30, 0, -50, 10, 20, 25, 'texturas/parede3.jpeg');
+    createTexturedBuilding(streetWidth / 2 + buildingWidth / 2 + sidewalkWidth, 0, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio2.jpeg');
+    createTexturedBuilding(streetWidth / 2 + buildingWidth / 2 + sidewalkWidth, 20, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio3.jpeg');
+    createTexturedBuilding(streetWidth / 2 + buildingWidth / 2 + sidewalkWidth, -20, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio.jpeg');    
+    createTexturedBuilding(streetWidth / 2 + buildingWidth / 2 + sidewalkWidth, 40, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio2.jpeg');
+    createTexturedBuilding(streetWidth / 2 + buildingWidth / 2 + sidewalkWidth, -40, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio4.jpeg');
 
     // Posicao da camera de um cadeirante
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
@@ -74,61 +79,129 @@ function init() {
 
     // Animação (loop de renderização)
     animate();
-}
+} // Fim do init
 
+// Carregador de texturas
 const textureLoader = new THREE.TextureLoader();
 
-// Função para criar um prédio com textura
-function createTexturedBuilding(x, y, z, width, depth, height, texturePath) {
+// Função para criar a rua e calçadas
+function createStreetAndSidewalks(streetWidth, streetLength, sidewalkWidth, sidewalkHeight) {
+    // Rua
+    const streetGeometry = new THREE.PlaneGeometry(streetWidth, streetLength);
+    const streetMaterial = new THREE.MeshLambertMaterial({ color: 0x333333 });
+    const street = new THREE.Mesh(streetGeometry, streetMaterial);
+    street.rotation.x = -Math.PI / 2;
+    street.position.set(0, 0, 0);
+    scene.add(street);
+
+    // Calçadas
+    const sidewalkGeometry = new THREE.BoxGeometry(sidewalkWidth, sidewalkHeight, streetLength);
+    const sidewalkMaterial = new THREE.MeshLambertMaterial({ color: 0xCCCCCC });
+    const sidewalkLeft = new THREE.Mesh(sidewalkGeometry, sidewalkMaterial);
+    const sidewalkRight = new THREE.Mesh(sidewalkGeometry, sidewalkMaterial);
+
+    sidewalkLeft.position.set(-(streetWidth / 2 + sidewalkWidth / 2), sidewalkHeight / 2, 0);
+    sidewalkRight.position.set(streetWidth / 2 + sidewalkWidth / 2, sidewalkHeight / 2, 0);
+
+    scene.add(sidewalkLeft);
+    scene.add(sidewalkRight);
+
+    // Rampas de acesso
+    // Material para as rampas
+    const rampMaterial = new THREE.MeshLambertMaterial({ color: 0xFF0000 }); // Vermelho para visibilidade
+
+    // Definindo a geometria da rampa (mais larga para visibilidade)
+    const rampGeometry = new THREE.PlaneGeometry(sidewalkWidth, sidewalkHeight);
+    
+    // Definindo posições das rampas
+    const rampPositions = [-100, 0, 100]; // Posições ao longo da calçada onde as rampas serão colocadas
+
+    for (let i = 0; i < rampPositions.length; i++) {
+        const ramp = new THREE.Mesh(rampGeometry, rampMaterial);
+        ramp.rotation.x = -Math.PI / 4; // Inclinação da rampa
+        ramp.position.set(-(streetWidth / 2 + sidewalkWidth / 2), sidewalkHeight / 2, rampPositions[i]);
+
+        const ramp2 = new THREE.Mesh(rampGeometry, rampMaterial);
+        ramp2.rotation.x = -Math.PI / 4; // Inclinação da rampa
+        ramp2.position.set(streetWidth / 2 + sidewalkWidth / 2, sidewalkHeight / 2, rampPositions[i]);
+
+        scene.add(ramp);
+        scene.add(ramp2);
+
+        console.log("Rampa adicionada em: ", ramp.position);
+    }
+}
+
+// Função para criar prédios com textura
+function createTexturedBuilding(x, z, width, depth, height, texturePath) {
     const buildingGeometry = new THREE.BoxGeometry(width, height, depth);
-
-    // Carrega a textura
     const buildingTexture = textureLoader.load(texturePath);
+    buildingTexture.wrapS = THREE.RepeatWrapping;
+    buildingTexture.wrapT = THREE.RepeatWrapping;
+    buildingTexture.repeat.set(1, height / 10); // Repetir textura verticalmente
     const buildingMaterial = new THREE.MeshLambertMaterial({ map: buildingTexture });
-
     const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
-    building.position.set(x, y + (height / 2), z);
+
+    // Ajustar a posição y para que a base do prédio fique alinhada com a calçada
+    building.position.set(x, height / 2 + 0.1, z); // Eleva-se ligeiramente acima da calçada
     scene.add(building);
 }
 
-// Variáveis para armazenar se a câmera está em contato com a rampa ou degraus
+// Variáveis para armazenar se a câmera está em contato com a calçada ou rampa
+let onSidewalk = false;
 let onRamp = false;
-let onStairs = false;
+
+// Posições das rampas
+const rampPositions = [-100, 0, 100];
+const rampWidth = sidewalkWidth; // Supondo que a largura da rampa seja igual à largura da calçada
 
 function checkCollision() {
-    // Suponha que a rampa e os degraus têm posições fixas no mundo
-    // Você precisará substituir estas coordenadas com as posições reais da rampa e degraus no seu jogo
-    const rampPosition = { x: -5, zStart: -5, zEnd: 5 };
-    const stairsPosition = { x: 5, zStart: -5, zEnd: 5 };
+    onSidewalk = false;
+    onRamp = false;
 
-    // Verifica se a câmera está na posição da rampa
-    if (camera.position.x > rampPosition.x - 2.5 && camera.position.x < rampPosition.x + 2.5 &&
-        camera.position.z > rampPosition.zStart && camera.position.z < rampPosition.zEnd) {
-        onRamp = true;
-    } else {
-        onRamp = false;
+    // Verifica se a câmera está na posição da calçada
+    if ((camera.position.x < -(streetWidth / 2) && camera.position.x > -(streetWidth / 2 + sidewalkWidth)) || 
+        (camera.position.x > (streetWidth / 2) && camera.position.x < (streetWidth / 2 + sidewalkWidth))) {
+        onSidewalk = true;
     }
 
-    // Verifica se a câmera está na posição dos degraus
-    if (camera.position.x > stairsPosition.x - 2.5 && camera.position.x < stairsPosition.x + 2.5 &&
-        camera.position.z > stairsPosition.zStart && camera.position.z < stairsPosition.zEnd) {
-        onStairs = true;
-    } else {
-        onStairs = false;
+    // Verifica se a câmera está na posição da rampa
+    for (let i = 0; i < rampPositions.length; i++) {
+        if (camera.position.z > rampPositions[i] - rampWidth / 2 && 
+            camera.position.z < rampPositions[i] + rampWidth / 2 &&
+            camera.position.x >= -(streetWidth / 2) && 
+            camera.position.x <= (streetWidth / 2)) {
+            onRamp = true;
+            break; // Sai do loop se a câmera estiver em qualquer uma das rampas
+        }
     }
 }
 
 function moveCamera(deltaTime) {
-    velocity.z -= velocity.z * 10.0 * deltaTime;
+    // Calcula a nova posição baseada no movimento
+    let newZ = velocity.z - velocity.z * 10.0 * deltaTime;
+    if (moveForward) newZ -= 200.0 * deltaTime;
+    if (moveBackward) newZ += 200.0 * deltaTime;
 
-    if (moveForward && !onStairs) velocity.z -= 50.0 * deltaTime;
-    if (moveBackward) velocity.z += 50.0 * deltaTime;
+    // Move a câmera para a nova posição
+    camera.translateZ(newZ * deltaTime);
 
-    camera.translateZ(velocity.z * deltaTime);
-
+    // Aplica rotação
     if (rotateLeft) camera.rotation.y += rotationSpeed * deltaTime;
     if (rotateRight) camera.rotation.y -= rotationSpeed * deltaTime;
+
+    // Verifica a colisão com a calçada e rampa
+    checkCollision();
+
+    // Restringe o movimento vertical se estiver na calçada e não na rampa
+    if (onSidewalk && !onRamp) {
+        // Impede que a câmera suba na calçada
+        camera.position.y = Math.max(camera.position.y, sidewalkHeight);
+    }
 }
+
+// As funções onKeyDown e onKeyUp permanecem as mesmas
+
 
 // Função de animação
 function animate() {
