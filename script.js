@@ -100,13 +100,15 @@ function createStreetAndSidewalks(streetWidth, streetLength, sidewalkWidth, side
     scene.add(street);
 
     // Calçadas
-    const sidewalkGeometry = new THREE.BoxGeometry(sidewalkWidth, sidewalkHeight, streetLength);
-    const sidewalkMaterial = new THREE.MeshLambertMaterial({ color: 0xCCCCCC });
-    const sidewalkLeft = new THREE.Mesh(sidewalkGeometry, sidewalkMaterial);
-    const sidewalkRight = new THREE.Mesh(sidewalkGeometry, sidewalkMaterial);
+    // Calcular o comprimento de cada seção da calçada
+    const sidewalkSectionLength = (streetLength - rampWidth) / 2;
 
-    sidewalkLeft.position.set(-(streetWidth / 2 + sidewalkWidth / 2), sidewalkHeight / 2, 0);
-    sidewalkRight.position.set(streetWidth / 2 + sidewalkWidth / 2, sidewalkHeight / 2, 0);
+    // Criar as seções da calçada
+    createSidewalkSection(-(streetWidth / 2 + sidewalkWidth / 2), sidewalkSectionLength, sidewalkWidth, sidewalkHeight,  sidewalkSectionLength / 2 + 1);
+    createSidewalkSection(-(streetWidth / 2 + sidewalkWidth / 2), sidewalkSectionLength, sidewalkWidth, sidewalkHeight, -sidewalkSectionLength / 2 - 1);
+    createSidewalkSection(streetWidth / 2 + sidewalkWidth / 2, sidewalkSectionLength, sidewalkWidth, sidewalkHeight,  sidewalkSectionLength / 2 + 1);
+    createSidewalkSection(streetWidth / 2 + sidewalkWidth / 2, sidewalkSectionLength, sidewalkWidth, sidewalkHeight, -sidewalkSectionLength / 2 - 1);
+
 
     // Criar espaços para rampas
     createRamp(-(streetWidth / 2 + sidewalkWidth / 2), sidewalkHeight, rampWidth, 0);
@@ -114,10 +116,16 @@ function createStreetAndSidewalks(streetWidth, streetLength, sidewalkWidth, side
 
     // Adicionar blocos de colisão nas bordas da calçada
     addCollisionBlocks(streetWidth, streetLength, sidewalkWidth, sidewalkHeight, rampWidth);
+}
 
-    scene.add(sidewalkLeft);
-    scene.add(sidewalkRight);
+// Criando a calçada
+function createSidewalkSection(x, length, width, height, zPosition) {
+    const sidewalkGeometry = new THREE.BoxGeometry(width, height, length);
+    const sidewalkMaterial = new THREE.MeshLambertMaterial({ color: 0xCCCCCC });
+    const sidewalk = new THREE.Mesh(sidewalkGeometry, sidewalkMaterial);
 
+    sidewalk.position.set(x, height / 2, zPosition);
+    scene.add(sidewalk);
 }
 
 // Adicionando colisao 
