@@ -8,6 +8,8 @@ let velocity = new THREE.Vector3();
 let rotationSpeed = 1; // velocidade da rotação
 let prevTime = performance.now();
 
+let collisionObjects = []; // Blocos de colisao
+
 // Dimensões da rua e calçadas
 const streetWidth = 20;
 const streetLength = 500;
@@ -109,9 +111,47 @@ function createStreetAndSidewalks(streetWidth, streetLength, sidewalkWidth, side
     createRamp(-(streetWidth / 2 + sidewalkWidth / 2), sidewalkHeight, rampWidth, 0);
     createRamp(streetWidth / 2 + sidewalkWidth / 2, sidewalkHeight, rampWidth, 0);
 
+    // Adicionar blocos de colisão nas bordas da calçada
+    addCollisionBlocks(streetWidth, streetLength, sidewalkWidth, sidewalkHeight, rampWidth);
+
     scene.add(sidewalkLeft);
     scene.add(sidewalkRight);
 
+}
+
+// Adicionando colisao 
+function addCollisionBlocks(streetWidth, streetLength, sidewalkWidth, sidewalkHeight, rampWidth) {
+    const blockDepth = (streetLength - rampWidth) / 2; // Reduzindo o comprimento para criar espaço para a separação
+    const blockHeight = 2; // Altura suficiente para impedir a passagem
+    const blockWidth = sidewalkWidth/4;
+
+    const blockGeometry = new THREE.BoxGeometry(blockWidth, blockHeight, blockDepth);
+    const blockMaterial = new THREE.MeshBasicMaterial({ visible: false }); // Material invisível
+
+    // Bloco esquerdo - Parte 1
+    const blockLeft1 = new THREE.Mesh(blockGeometry, blockMaterial);
+    blockLeft1.position.set(-(streetWidth / 2 + blockWidth / 2), sidewalkHeight + blockHeight / 2, blockDepth / 2 + 1);
+
+    // Bloco esquerdo - Parte 2
+    const blockLeft2 = new THREE.Mesh(blockGeometry, blockMaterial);
+    blockLeft2.position.set(-(streetWidth / 2 + blockWidth / 2), sidewalkHeight + blockHeight / 2, -blockDepth / 2 - 1);
+
+    // Repetir para o lado direito
+    const blockRight1 = new THREE.Mesh(blockGeometry, blockMaterial);
+    blockRight1.position.set(streetWidth / 2 + blockWidth / 2, sidewalkHeight + blockHeight / 2, blockDepth / 2 + 1);
+
+    const blockRight2 = new THREE.Mesh(blockGeometry, blockMaterial);
+    blockRight2.position.set(streetWidth / 2 + blockWidth / 2, sidewalkHeight + blockHeight / 2, -blockDepth / 2 - 1);
+
+    scene.add(blockLeft1);
+    scene.add(blockLeft2);
+    scene.add(blockRight1);
+    scene.add(blockRight2);
+
+    collisionObjects.push(blockLeft1);
+    collisionObjects.push(blockLeft2);
+    collisionObjects.push(blockRight1);
+    collisionObjects.push(blockRight2);
 }
 
 // Função para criar rampas
@@ -150,9 +190,30 @@ function moveCamera(deltaTime) {
     // Move a câmera para a nova posição
     camera.translateZ(newZ * deltaTime);
 
+    // Verificar colisão
+    if (checkCollision()) {
+        // Se houver colisão, reverta o movimento
+        camera.translateZ(-newZ * deltaTime);
+    }
+
     // Aplica rotação
     if (rotateLeft) camera.rotation.y += rotationSpeed * deltaTime;
     if (rotateRight) camera.rotation.y -= rotationSpeed * deltaTime;
+}
+
+function checkCollision() {
+    const cameraPosition = new THREE.Vector3();
+    camera.getWorldPosition(cameraPosition);
+
+    for (let i = 0; i < collisionObjects.length; i++) {
+        const object = collisionObjects[i];
+        const boundingBox = new THREE.Box3().setFromObject(object);
+
+        if (boundingBox.containsPoint(cameraPosition)) {
+            return true; // Colisão detectada
+        }
+    }
+    return false; // Sem colisão
 }
 
 // As funções onKeyDown e onKeyUp permanecem as mesmas
