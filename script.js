@@ -57,6 +57,8 @@ function init() {
     // Criar a rua com calçadas
     createStreetAndSidewalks(streetWidth, streetLength, sidewalkWidth, sidewalkHeight, rampWidth);
     addRoadLines(streetWidth, streetLength, 2, 0.2, 5); //largura da rua, comprimento da rua, comprimento da linha, largura da linha, espaçamento entre as linhas
+    addCrosswalk(streetWidth, 0, 5, 1.5, 3, 5); // Parâmetros: largura da rua, posição z, comprimento da linha, largura da linha, espaçamento entre as linhas, número de linha
+
 
     // Criar prédios com textura
     const buildingWidth = 10; // Largura do prédio
@@ -168,12 +170,30 @@ function createRamp(xPosition, sidewalkHeight, rampWidth, streetLength) {
     const rampHeight = sidewalkHeight;
     const rampLength = rampWidth; // Comprimento da rampa
     const rampGeometry = new THREE.BoxGeometry(rampWidth, rampHeight, rampLength);
-    const rampMaterial = new THREE.MeshLambertMaterial({ color: 0xA0522D }); // Cor da rampa
+    const rampMaterial = new THREE.MeshLambertMaterial({ color: 0x0000FF}); // Cor da rampa
     const ramp = new THREE.Mesh(rampGeometry, rampMaterial);
 
     ramp.position.set(xPosition, rampHeight / 2, streetLength / 4); // Ajustar posição da rampa
     scene.add(ramp);
 }
+
+// Adicionando faixa de pedestre
+function addCrosswalk(streetWidth, zPosition, lineLength, lineWidth, lineSpacing, lineCount) {
+    const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF }); // Cor branca para as linhas da faixa de pedestre
+
+    for (let i = 0; i < lineCount; i++) {
+        const lineGeometry = new THREE.PlaneGeometry(lineWidth, lineLength);
+        const line = new THREE.Mesh(lineGeometry, lineMaterial);
+        line.rotation.x = -Math.PI / 2; // Rotação para ficar horizontal
+
+        // Posiciona cada linha da faixa de pedestre
+        const xPosition = -streetWidth / 2 + lineWidth / 2 + i * (lineWidth + lineSpacing);
+        line.position.set(xPosition, 0.01, zPosition); // Posiciona ligeiramente acima da rua para evitar z-fighting
+
+        scene.add(line);
+    }
+}
+
 
 // Função para criar prédios com textura
 function createTexturedBuilding(x, z, width, depth, height, texturePath) {
