@@ -56,6 +56,7 @@ function init() {
 
     // Criar a rua com calçadas
     createStreetAndSidewalks(streetWidth, streetLength, sidewalkWidth, sidewalkHeight, rampWidth);
+    addRoadLines(streetWidth, streetLength, 2, 0.2, 5); //largura da rua, comprimento da rua, comprimento da linha, largura da linha, espaçamento entre as linhas
 
     // Criar prédios com textura
     const buildingWidth = 10; // Largura do prédio
@@ -216,7 +217,27 @@ function checkCollision() {
     return false; // Sem colisão
 }
 
-// As funções onKeyDown e onKeyUp permanecem as mesmas
+// Criando linhas unicas
+function createRoadLine(x, z, lineLength, lineWidth, color = 0xffffff) {
+    const lineGeometry = new THREE.PlaneGeometry(lineWidth, lineLength);
+    const lineMaterial = new THREE.MeshBasicMaterial({ color: color });
+    const line = new THREE.Mesh(lineGeometry, lineMaterial);
+    line.rotation.x = -Math.PI / 2; // Rotação para ficar horizontal
+    line.position.set(x, 0.01, z); // Posiciona ligeiramente acima da rua para evitar z-fighting
+    scene.add(line);
+}
+
+// Adicionando as linhas na rua
+function addRoadLines(streetWidth, streetLength, lineLength, lineWidth, lineSpacing) {
+    const numberOfLines = streetLength / (lineLength + lineSpacing);
+    const startPositionZ = -streetLength / 2 + lineLength / 2;
+
+    for (let i = 0; i < numberOfLines; i++) {
+        const zPosition = startPositionZ + i * (lineLength + lineSpacing);
+        createRoadLine(0, zPosition, lineLength, lineWidth); // Centraliza as linhas na rua
+    }
+}
+
 
 
 // Função de animação
