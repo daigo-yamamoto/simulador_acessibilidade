@@ -61,30 +61,32 @@ function init() {
 
 
     // Criar prédios com textura
-    const buildingWidth = 10; // Largura do prédio
-    const buildingDepth = 15; // Profundidade do prédio
-    const buildingHeight = 40; // Altura do prédio
+    const buildingWidth = 10; 
+    const buildingDepth = 15; 
+    const buildingHeight = 40; 
     createTexturedBuilding(-streetWidth / 2 - buildingWidth / 2 - sidewalkWidth, 0, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio.jpeg');
     createTexturedBuilding(-streetWidth / 2 - buildingWidth / 2 - sidewalkWidth, 20, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio2.jpeg');
     createTexturedBuilding(-streetWidth / 2 - buildingWidth / 2 - sidewalkWidth, -20, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio3.jpeg');
     createTexturedBuilding(-streetWidth / 2 - buildingWidth / 2 - sidewalkWidth, 40, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio.jpeg');
     createTexturedBuilding(-streetWidth / 2 - buildingWidth / 2 - sidewalkWidth, -40, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio2.jpeg');
+    createTexturedBuilding(-streetWidth / 2 - buildingWidth / 2 - sidewalkWidth, 60, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio5.jpeg');
+    createTexturedBuilding(-streetWidth / 2 - buildingWidth / 2 - sidewalkWidth, -60, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio.jpeg');
 
     createTexturedBuilding(streetWidth / 2 + buildingWidth / 2 + sidewalkWidth, 0, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio2.jpeg');
     createTexturedBuilding(streetWidth / 2 + buildingWidth / 2 + sidewalkWidth, 20, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio3.jpeg');
     createTexturedBuilding(streetWidth / 2 + buildingWidth / 2 + sidewalkWidth, -20, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio.jpeg');    
     createTexturedBuilding(streetWidth / 2 + buildingWidth / 2 + sidewalkWidth, 40, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio2.jpeg');
     createTexturedBuilding(streetWidth / 2 + buildingWidth / 2 + sidewalkWidth, -40, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio4.jpeg');
+    createTexturedBuilding(streetWidth / 2 + buildingWidth / 2 + sidewalkWidth, 40, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio.jpeg');
+    createTexturedBuilding(streetWidth / 2 + buildingWidth / 2 + sidewalkWidth, -40, buildingWidth, buildingDepth, buildingHeight, 'texturas/predio6.jpeg');
 
     // Posicao da camera de um cadeirante
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.set(0, 1.6, 0); // Altura da câmera simula a altura de uma pessoa sentada
+    camera.position.set(0, 1.6, 0);
 
-    // Event listeners para teclado
     document.addEventListener('keydown', onKeyDown, false);
     document.addEventListener('keyup', onKeyUp, false);
 
-    // Animação (loop de renderização)
     animate();
 } // Fim do init
 
@@ -111,7 +113,6 @@ function createStreetAndSidewalks(streetWidth, streetLength, sidewalkWidth, side
     createSidewalkSection(streetWidth / 2 + sidewalkWidth / 2, sidewalkSectionLength, sidewalkWidth, sidewalkHeight,  sidewalkSectionLength / 2 + 1);
     createSidewalkSection(streetWidth / 2 + sidewalkWidth / 2, sidewalkSectionLength, sidewalkWidth, sidewalkHeight, -sidewalkSectionLength / 2 - 1);
 
-
     // Criar espaços para rampas
     createRamp(-(streetWidth / 2 + sidewalkWidth / 2), sidewalkHeight, rampWidth, 0);
     createRamp(streetWidth / 2 + sidewalkWidth / 2, sidewalkHeight, rampWidth, 0);
@@ -132,22 +133,19 @@ function createSidewalkSection(x, length, width, height, zPosition) {
 
 // Adicionando colisao 
 function addCollisionBlocks(streetWidth, streetLength, sidewalkWidth, sidewalkHeight, rampWidth) {
-    const blockDepth = (streetLength - rampWidth) / 2; // Reduzindo o comprimento para criar espaço para a separação
-    const blockHeight = 2; // Altura suficiente para impedir a passagem
+    const blockDepth = (streetLength - rampWidth) / 2; 
+    const blockHeight = 2; 
     const blockWidth = sidewalkWidth/4;
 
     const blockGeometry = new THREE.BoxGeometry(blockWidth, blockHeight, blockDepth);
     const blockMaterial = new THREE.MeshBasicMaterial({ visible: false }); // Material invisível
 
-    // Bloco esquerdo - Parte 1
     const blockLeft1 = new THREE.Mesh(blockGeometry, blockMaterial);
     blockLeft1.position.set(-(streetWidth / 2 + blockWidth / 2), sidewalkHeight + blockHeight / 2, blockDepth / 2 + 1);
 
-    // Bloco esquerdo - Parte 2
     const blockLeft2 = new THREE.Mesh(blockGeometry, blockMaterial);
     blockLeft2.position.set(-(streetWidth / 2 + blockWidth / 2), sidewalkHeight + blockHeight / 2, -blockDepth / 2 - 1);
 
-    // Repetir para o lado direito
     const blockRight1 = new THREE.Mesh(blockGeometry, blockMaterial);
     blockRight1.position.set(streetWidth / 2 + blockWidth / 2, sidewalkHeight + blockHeight / 2, blockDepth / 2 + 1);
 
@@ -168,27 +166,27 @@ function addCollisionBlocks(streetWidth, streetLength, sidewalkWidth, sidewalkHe
 // Função para criar rampas
 function createRamp(xPosition, sidewalkHeight, rampWidth, streetLength) {
     const rampHeight = sidewalkHeight;
-    const rampLength = rampWidth; // Comprimento da rampa
+    const rampLength = rampWidth; 
     const rampGeometry = new THREE.BoxGeometry(rampWidth, rampHeight, rampLength);
-    const rampMaterial = new THREE.MeshLambertMaterial({ color: 0x0000FF}); // Cor da rampa
+    const rampMaterial = new THREE.MeshLambertMaterial({ color: 0x0000FF});
     const ramp = new THREE.Mesh(rampGeometry, rampMaterial);
 
-    ramp.position.set(xPosition, rampHeight / 2, streetLength / 4); // Ajustar posição da rampa
+    ramp.position.set(xPosition, rampHeight / 2, streetLength / 4); 
     scene.add(ramp);
 }
 
 // Adicionando faixa de pedestre
 function addCrosswalk(streetWidth, zPosition, lineLength, lineWidth, lineSpacing, lineCount) {
-    const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF }); // Cor branca para as linhas da faixa de pedestre
+    const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF }); 
 
     for (let i = 0; i < lineCount; i++) {
         const lineGeometry = new THREE.PlaneGeometry(lineWidth, lineLength);
         const line = new THREE.Mesh(lineGeometry, lineMaterial);
-        line.rotation.x = -Math.PI / 2; // Rotação para ficar horizontal
+        line.rotation.x = -Math.PI / 2; 
 
         // Posiciona cada linha da faixa de pedestre
         const xPosition = -streetWidth / 2 + lineWidth / 2 + i * (lineWidth + lineSpacing);
-        line.position.set(xPosition, 0.01, zPosition); // Posiciona ligeiramente acima da rua para evitar z-fighting
+        line.position.set(xPosition, 0.01, zPosition); 
 
         scene.add(line);
     }
@@ -201,27 +199,24 @@ function createTexturedBuilding(x, z, width, depth, height, texturePath) {
     const buildingTexture = textureLoader.load(texturePath);
     buildingTexture.wrapS = THREE.RepeatWrapping;
     buildingTexture.wrapT = THREE.RepeatWrapping;
-    buildingTexture.repeat.set(1, height / 10); // Repetir textura verticalmente
+    buildingTexture.repeat.set(1, height / 10); 
     const buildingMaterial = new THREE.MeshLambertMaterial({ map: buildingTexture });
     const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
 
     // Ajustar a posição y para que a base do prédio fique alinhada com a calçada
-    building.position.set(x, height / 2 + 0.1, z); // Eleva-se ligeiramente acima da calçada
+    building.position.set(x, height / 2 + 0.1, z); 
     scene.add(building);
 }
 
 function moveCamera(deltaTime) {
-    // Calcula a nova posição baseada no movimento
     let newZ = velocity.z - velocity.z * 10.0 * deltaTime;
     if (moveForward) newZ -= 200.0 * deltaTime;
     if (moveBackward) newZ += 200.0 * deltaTime;
 
-    // Move a câmera para a nova posição
     camera.translateZ(newZ * deltaTime);
 
     // Verificar colisão
     if (checkCollision()) {
-        // Se houver colisão, reverta o movimento
         camera.translateZ(-newZ * deltaTime);
     }
 
@@ -239,10 +234,10 @@ function checkCollision() {
         const boundingBox = new THREE.Box3().setFromObject(object);
 
         if (boundingBox.containsPoint(cameraPosition)) {
-            return true; // Colisão detectada
+            return true; 
         }
     }
-    return false; // Sem colisão
+    return false; 
 }
 
 // Criando linhas unicas
@@ -250,8 +245,8 @@ function createRoadLine(x, z, lineLength, lineWidth, color = 0xffffff) {
     const lineGeometry = new THREE.PlaneGeometry(lineWidth, lineLength);
     const lineMaterial = new THREE.MeshBasicMaterial({ color: color });
     const line = new THREE.Mesh(lineGeometry, lineMaterial);
-    line.rotation.x = -Math.PI / 2; // Rotação para ficar horizontal
-    line.position.set(x, 0.01, z); // Posiciona ligeiramente acima da rua para evitar z-fighting
+    line.rotation.x = -Math.PI / 2; 
+    line.position.set(x, 0.01, z); 
     scene.add(line);
 }
 
@@ -262,11 +257,9 @@ function addRoadLines(streetWidth, streetLength, lineLength, lineWidth, lineSpac
 
     for (let i = 0; i < numberOfLines; i++) {
         const zPosition = startPositionZ + i * (lineLength + lineSpacing);
-        createRoadLine(0, zPosition, lineLength, lineWidth); // Centraliza as linhas na rua
+        createRoadLine(0, zPosition, lineLength, lineWidth); 
     }
 }
-
-
 
 // Função de animação
 function animate() {
